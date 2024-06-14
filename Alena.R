@@ -97,8 +97,29 @@ data %>%
   
 
 
-# H1b: Pokud člověk nevykazuje výrazné změny chování, pak je vyšší míra přijatelnosti konzumace alkoholu. 
+# H1b: Pokud člověk nevykazuje výrazné změny chování, 
+# pak je vyšší míra přijatelnosti konzumace alkoholu. 
+# Zmen_chov
+# Osob_hran
+data %>% 
+  ggplot() +
+  aes(x = Osob_hran, y = Zmen_chov) +
+  geom_point(alpha = 0.1, size = 4) +
+  theme_classic()
 
+# Korelace
+corr.test(data$Zmen_chov, data$Osob_hran)
+corr.test(data$Zmen_chov, data$Ost_hran)
+
+# Regrese
+m1 = lm(Osob_hran ~ Zmen_chov, data = data)
+summary(m1)
+m2 = lm(Zmen_chov ~ Osob_hran, data = data)
+summary(m2)
+m3 = lm(Zmen_chov ~ Ost_hran, data = data)
+summary(m3)
+m4 = lm(Zmen_chov ~ Ost_hran + Osob_hran, data = data)
+summary(m4)
 
 
 #_____________________________________________________________________________________________________________________
@@ -369,14 +390,15 @@ data_H4 %>%
 # H5b: Lidé s vyšším vzdělání méně stigmatizují abstinenci. 
 # H5c: Ženy méně stigmatizují abstinenci než muži
 
-data %>% 
+df = data %>% 
   select(Stigma_Index, Gender, Vzdelani) %>%
   mutate(Vzdelani = fct_collapse(Vzdelani, 
                                  "Základní vzdělaní a středoškolské s výučním listem" = c("Základní", "Středoškolské s výučním listem"), 
                                  "Středoškolské vzdělání s maturitou" = c("Středoškolské s maturitou"), 
                                  "Vyšší odborné a vysokoškolské vzdělání" = c("Vyšší odborné", "Vysokoškolské")), 
-         Vzdelani = fct_relevel(Vzdelani, "Základní vzdělaní a středoškolské s výučním listem")) %>% 
-  drop_na() %>% 
+         Vzdelani = fct_relevel(Vzdelani, "Základní vzdělaní a středoškolské s výučním listem")) 
+  # drop_na() %>% 
+df %>%
   group_by(Gender, Vzdelani) %>% 
   summarise(Stigma_Index2 = mean(Stigma_Index, na.rm = T)) %>% 
   ggplot(aes(x = Gender, y = Stigma_Index2, fill = Vzdelani))+
@@ -393,4 +415,14 @@ data %>%
   labs(x = "Gender", 
        y = "Stigmatizace abstinence")
   
-  
+# Regrese
+m5 = lm(Stigma_Index ~ Gender, data = df)
+summary(m5)
+m6 = lm(Stigma_Index ~ Vzdelani, data = df)
+summary(m6)
+m7 = lm(Stigma_Index ~ Vzdelani + Gender, data = df)
+summary(m7)
+m8 = lm(Stigma_Index ~ Vzdelani * Gender, data = df)
+summary(m8)
+
+
